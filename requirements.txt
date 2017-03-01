@@ -1,0 +1,4 @@
+pathos>=0.2.0
+PyYAML>=3.12
+requests>=2.13.0
+selenium>=3.0.2

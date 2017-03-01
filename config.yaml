@@ -1,0 +1,11 @@
+username: #
+password: #
+storage: courses
+threads: 3
+sleep: 1
+driver_path: /Users/nn/chromedriver
+
+courses:
+  - https://code.tutsplus.com/courses/create-a-rest-api-with-django
+  - https://code.tutsplus.com/courses/understanding-and-using-oauth-in-laravel
+  - https://design.tutsplus.com/courses/a-quick-guide-to-color-in-digital-painting
