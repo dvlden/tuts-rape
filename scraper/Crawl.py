@@ -2,6 +2,7 @@ from scraper.Helper import Helper
 import time
 import requests
 from pathos.threading import ThreadPool
+from slugify import slugify
 
 class Crawl:
     login_url = 'https://tutsplus.com/sign_in'
@@ -19,6 +20,7 @@ class Crawl:
 
         self.build_storage()
         self.begin_processing()
+        Helper.delete_cache()
 
     def steps(self):
         self.login(self.login_url)
@@ -97,13 +99,11 @@ class Crawl:
             'current_lesson': 'lesson-index__lesson--current',
             'title': 'lesson-index__lesson-title',
             'video': 'source',
-            'number': 'lesson-index__lesson-number',
-            'quality_list': 'w-menu__list-item--Quality',
-            'quality_items': 'w-menu__list-link'
+            'number': 'lesson-index__lesson-number'
         }
 
         # Select best possible quality
-        browser.execute_script("var quality = document.querySelectorAll('.w-menu__list-item--Quality .w-menu__list-link'); quality[quality.length - 1].click();")
+        browser.execute_script('var waitForElement=setInterval(function(){var a=document.querySelectorAll(".w-menu__list-item--Quality .w-menu__list-link");a.length>0&&(clearInterval(waitForElement),a[a.length-1].click())},300);')
 
         current_lesson = browser.find_element_by_class_name(elements['current_lesson'])
         title = current_lesson.find_element_by_class_name(elements['title'])
@@ -126,25 +126,25 @@ class Crawl:
             if not Helper.dir_exists(base_dir):
                 Helper.make_dir(base_dir)
 
-            category_dir = base_dir + '/' + course['category']
+            category_dir = base_dir + '/' + slugify(course['category'])
             if not Helper.dir_exists(category_dir):
                 Helper.make_dir(category_dir)
 
-            sub_category_dir = category_dir + '/' + course['sub_category']
+            sub_category_dir = category_dir + '/' + slugify(course['sub_category'])
             if not Helper.dir_exists(sub_category_dir):
                 Helper.make_dir(sub_category_dir)
 
-            course_dir = sub_category_dir + '/' + course['title']
+            course_dir = sub_category_dir + '/' + slugify(course['title'])
             if not Helper.dir_exists(course_dir):
                 Helper.make_dir(course_dir)
 
             for lesson in course['lessons']:
-                file = course_dir + '/' + lesson['number'] + ' - ' + lesson['title'] + '.mp4'
+                file = course_dir + '/' + slugify(lesson['number'] + ' ' + lesson['title']) + '.mp4'
                 lesson['file'] = file
 
     def download_lesson(self, lesson):
         print(
-            '- Preparing to download lesson "{lesson_title}"'.format(
+            '- Preparing to download lesson "{lesson_title}"...'.format(
                 lesson_title=lesson['title']
             )
         )
@@ -175,7 +175,7 @@ class Crawl:
         for course in self.course_data:
             pool.map(self.download_lesson, course['lessons'])
             print(
-                '--- Course "{course_title}" has been downloaded, with total of {lessons_amount} lessons.'.format(
+                '--- Course "{course_title}" has been downloaded, with total of "{lessons_amount}" lessons.'.format(
                     course_title=course['title'],
                     lessons_amount=len(course['lessons'])
                 )

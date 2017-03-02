@@ -27,6 +27,11 @@ class Helper:
             return pickle.load(file)
 
     @staticmethod
+    def delete_cache(cache_file='.tr-cache'):
+        if Helper.file_exists(cache_file):
+            os.remove(cache_file)
+
+    @staticmethod
     def setup_webdriver(driver_path=None):
         if driver_path is None:
             driver_path = Helper.config('driver_path')
